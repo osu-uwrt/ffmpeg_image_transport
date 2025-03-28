@@ -24,7 +24,7 @@ using ParameterDefinition = FFMPEGPublisher::ParameterDefinition;
 using ParameterValue = FFMPEGPublisher::ParameterValue;
 using ParameterDescriptor = FFMPEGPublisher::ParameterDescriptor;
 
-static const ParameterDefinition params[] = {
+static ParameterDefinition params[] = {
   {ParameterValue("libx264"),
    ParameterDescriptor()
      .set__name("encoding")
@@ -192,6 +192,12 @@ rmw_qos_profile_t FFMPEGPublisher::initialize(
   const uint ns_len = node->get_effective_namespace().length();
   std::string param_base_name = base_topic.substr(ns_len);
   std::replace(param_base_name.begin(), param_base_name.end(), '/', '.');
+
+  for(ParameterDefinition & p : params) {
+    if(node->has_parameter("ffmpeg_image_transport" + p.descriptor.name)) {
+      p.defaultValue = node->get_parameter("ffmpeg_image_transport" + p.descriptor.name).get_parameter_value();
+    }
+  }
 
   for (const auto & p : params) {
     declareParameter(node, param_base_name, p);
